@@ -1,0 +1,565 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  OWNER
+  ADMIN
+  COORDINATOR
+  SUPPORT_WORKER
+  BILLING
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CASUAL
+  CONTRACTOR
+}
+
+enum SubscriptionTier {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+enum ManagementType {
+  NDIA_MANAGED
+  PLAN_MANAGED
+  SELF_MANAGED
+}
+
+enum ParticipantStatus {
+  ACTIVE
+  INACTIVE
+  EXITED
+}
+
+enum PlanStatus {
+  ACTIVE
+  EXPIRED
+  SUPERSEDED
+}
+
+enum FundingCategory {
+  CORE
+  CAPACITY_BUILDING
+  CAPITAL
+}
+
+enum AgreementStatus {
+  DRAFT
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum SupportUnit {
+  HOUR
+  EACH
+  DAY
+  WEEK
+}
+
+enum ShiftStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum ShiftType {
+  STANDARD
+  SLEEPOVER
+  ACTIVE_NIGHT
+}
+
+enum NoteType {
+  PROGRESS
+  INCIDENT
+  HANDOVER
+  GENERAL
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  PARTIALLY_PAID
+  OVERDUE
+  VOID
+}
+
+enum BillingTarget {
+  NDIA
+  PLAN_MANAGER
+  SELF_MANAGED
+}
+
+enum ClaimType {
+  STANDARD
+  CANCELLATION
+  TRAVEL
+  REPORT_WRITING
+}
+
+enum IncidentCategory {
+  ABUSE
+  NEGLECT
+  INJURY
+  DEATH
+  RESTRICTIVE_PRACTICE
+  MEDICATION
+  OTHER
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  CLOSED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  EXPORT
+}
+
+// ============================================================
+// ORGANISATION (TENANT)
+// ============================================================
+
+model Organisation {
+  id                  String            @id @default(uuid())
+  name                String
+  abn                 String?           @unique
+  ndisRegistrationNo  String?
+  email               String
+  phone               String?
+  address             Json?
+  timezone            String            @default("Australia/Brisbane")
+  subscriptionTier    SubscriptionTier  @default(FREE)
+  stripeCustomerId    String?
+  stripeSubscriptionId String?
+  settings            Json              @default("{}")
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  deletedAt           DateTime?
+
+  users               User[]
+  participants        Participant[]
+  serviceAgreements   ServiceAgreement[]
+  shifts              Shift[]
+  invoices            Invoice[]
+  incidents           Incident[]
+  auditLogs           AuditLog[]
+
+  @@map("organisations")
+}
+
+// ============================================================
+// USER
+// ============================================================
+
+model User {
+  id                String          @id @default(uuid())
+  organisationId    String
+  email             String
+  passwordHash      String
+  firstName         String
+  lastName          String
+  role              UserRole        @default(SUPPORT_WORKER)
+  phone             String?
+  isActive          Boolean         @default(true)
+  lastLoginAt       DateTime?
+  emailVerifiedAt   DateTime?
+  emailVerifyToken  String?
+  resetPasswordToken String?
+  resetPasswordExpiry DateTime?
+  qualifications    Json?
+  hourlyRate        Decimal?        @db.Decimal(10, 2)
+  employmentType    EmploymentType?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  deletedAt         DateTime?
+
+  organisation      Organisation    @relation(fields: [organisationId], references: [id])
+  shifts            Shift[]
+  shiftNotes        ShiftNote[]
+  reportedIncidents Incident[]
+  auditLogs         AuditLog[]
+
+  @@unique([organisationId, email])
+  @@index([organisationId])
+  @@index([email])
+  @@map("users")
+}
+
+// ============================================================
+// PARTICIPANT
+// ============================================================
+
+model Participant {
+  id                      String            @id @default(uuid())
+  organisationId          String
+  ndisNumber              String
+  firstName               String
+  lastName                String
+  dateOfBirth             DateTime          @db.Date
+  email                   String?
+  phone                   String?
+  address                 Json?
+  managementType          ManagementType
+  planManagerName         String?
+  planManagerEmail        String?
+  supportCoordinatorName  String?
+  supportCoordinatorEmail String?
+  emergencyContact        Json?
+  notes                   String?
+  status                  ParticipantStatus @default(ACTIVE)
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+  deletedAt               DateTime?
+
+  organisation            Organisation      @relation(fields: [organisationId], references: [id])
+  ndisPlans               NdisPlan[]
+  serviceAgreements       ServiceAgreement[]
+  shifts                  Shift[]
+  invoices                Invoice[]
+  incidents               Incident[]
+
+  @@unique([organisationId, ndisNumber])
+  @@index([organisationId])
+  @@index([ndisNumber])
+  @@map("participants")
+}
+
+// ============================================================
+// NDIS PLAN
+// ============================================================
+
+model NdisPlan {
+  id                    String          @id @default(uuid())
+  participantId         String
+  planStartDate         DateTime        @db.Date
+  planEndDate           DateTime        @db.Date
+  status                PlanStatus      @default(ACTIVE)
+  totalBudget           Decimal         @db.Decimal(12, 2)
+  coreBudget            Decimal         @default(0) @db.Decimal(12, 2)
+  capacityBuildingBudget Decimal        @default(0) @db.Decimal(12, 2)
+  capitalBudget         Decimal         @default(0) @db.Decimal(12, 2)
+  notes                 String?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  participant           Participant     @relation(fields: [participantId], references: [id])
+  fundingPeriods        FundingPeriod[]
+  serviceAgreements     ServiceAgreement[]
+
+  @@index([participantId])
+  @@map("ndis_plans")
+}
+
+// ============================================================
+// FUNDING PERIOD
+// ============================================================
+
+model FundingPeriod {
+  id                String          @id @default(uuid())
+  ndisPlanId        String
+  category          FundingCategory
+  periodStartDate   DateTime        @db.Date
+  periodEndDate     DateTime        @db.Date
+  allocatedAmount   Decimal         @db.Decimal(12, 2)
+  spentAmount       Decimal         @default(0) @db.Decimal(12, 2)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  ndisPlan          NdisPlan        @relation(fields: [ndisPlanId], references: [id])
+
+  @@index([ndisPlanId])
+  @@map("funding_periods")
+}
+
+// ============================================================
+// SERVICE AGREEMENT
+// ============================================================
+
+model ServiceAgreement {
+  id                String            @id @default(uuid())
+  organisationId    String
+  participantId     String
+  ndisPlanId        String
+  startDate         DateTime          @db.Date
+  endDate           DateTime          @db.Date
+  status            AgreementStatus   @default(DRAFT)
+  signedAt          DateTime?
+  documentUrl       String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  organisation      Organisation      @relation(fields: [organisationId], references: [id])
+  participant       Participant       @relation(fields: [participantId], references: [id])
+  ndisPlan          NdisPlan          @relation(fields: [ndisPlanId], references: [id])
+  lineItems         ServiceAgreementItem[]
+
+  @@index([organisationId])
+  @@index([participantId])
+  @@map("service_agreements")
+}
+
+// ============================================================
+// SERVICE AGREEMENT LINE ITEM
+// ============================================================
+
+model ServiceAgreementItem {
+  id                    String            @id @default(uuid())
+  serviceAgreementId    String
+  supportItemNumber     String
+  supportItemName       String
+  category              FundingCategory
+  unitPrice             Decimal           @db.Decimal(10, 2)
+  allocatedQty          Decimal           @db.Decimal(10, 2)
+  allocatedBudget       Decimal           @db.Decimal(12, 2)
+  deliveredQty          Decimal           @default(0) @db.Decimal(10, 2)
+  deliveredBudget       Decimal           @default(0) @db.Decimal(12, 2)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  serviceAgreement      ServiceAgreement  @relation(fields: [serviceAgreementId], references: [id])
+  shifts                Shift[]
+  invoiceLineItems      InvoiceLineItem[]
+
+  @@index([serviceAgreementId])
+  @@map("service_agreement_items")
+}
+
+// ============================================================
+// NDIS SUPPORT CATALOGUE (REFERENCE DATA)
+// ============================================================
+
+model NdisSupportCatalogue {
+  id                    String          @id @default(uuid())
+  supportItemNumber     String          @unique
+  supportItemName       String
+  registrationGroup     String
+  supportCategory       FundingCategory
+  unit                  SupportUnit
+  priceLimit            Decimal         @db.Decimal(10, 2)
+  priceLimitRemote      Decimal?        @db.Decimal(10, 2)
+  priceLimitVeryRemote  Decimal?        @db.Decimal(10, 2)
+  effectiveFrom         DateTime        @db.Date
+  effectiveTo           DateTime?       @db.Date
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@index([supportItemNumber])
+  @@index([supportCategory])
+  @@map("ndis_support_catalogue")
+}
+
+// ============================================================
+// SHIFT
+// ============================================================
+
+model Shift {
+  id                      String                @id @default(uuid())
+  organisationId          String
+  participantId           String
+  userId                  String
+  serviceAgreementItemId  String
+  scheduledStart          DateTime
+  scheduledEnd            DateTime
+  actualStart             DateTime?
+  actualEnd               DateTime?
+  status                  ShiftStatus           @default(SCHEDULED)
+  shiftType               ShiftType             @default(STANDARD)
+  breakMinutes            Int                   @default(0)
+  billableHours           Decimal?              @db.Decimal(5, 2)
+  travelKm                Decimal?              @db.Decimal(6, 1)
+  travelMinutes           Int?
+  isRecurring             Boolean               @default(false)
+  recurringPatternId      String?
+  notes                   String?
+  clockInLat              Decimal?              @db.Decimal(10, 7)
+  clockInLng              Decimal?              @db.Decimal(10, 7)
+  clockOutLat             Decimal?              @db.Decimal(10, 7)
+  clockOutLng             Decimal?              @db.Decimal(10, 7)
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+
+  organisation            Organisation          @relation(fields: [organisationId], references: [id])
+  participant             Participant           @relation(fields: [participantId], references: [id])
+  user                    User                  @relation(fields: [userId], references: [id])
+  serviceAgreementItem    ServiceAgreementItem  @relation(fields: [serviceAgreementItemId], references: [id])
+  shiftNotes              ShiftNote[]
+  invoiceLineItems        InvoiceLineItem[]
+
+  @@index([organisationId])
+  @@index([participantId])
+  @@index([userId])
+  @@index([scheduledStart])
+  @@index([status])
+  @@map("shifts")
+}
+
+// ============================================================
+// SHIFT NOTE
+// ============================================================
+
+model ShiftNote {
+  id            String      @id @default(uuid())
+  shiftId       String
+  userId        String
+  content       String
+  noteType      NoteType    @default(PROGRESS)
+  goalIds       String[]
+  attachments   Json?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  shift         Shift       @relation(fields: [shiftId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
+
+  @@index([shiftId])
+  @@map("shift_notes")
+}
+
+// ============================================================
+// INVOICE
+// ============================================================
+
+model Invoice {
+  id                String          @id @default(uuid())
+  organisationId    String
+  participantId     String
+  invoiceNumber     String
+  invoiceDate       DateTime        @db.Date
+  dueDate           DateTime        @db.Date
+  status            InvoiceStatus   @default(DRAFT)
+  billingTarget     BillingTarget
+  billingEmail      String?
+  subtotal          Decimal         @db.Decimal(12, 2)
+  gst               Decimal         @default(0) @db.Decimal(12, 2)
+  total             Decimal         @db.Decimal(12, 2)
+  paidAmount        Decimal         @default(0) @db.Decimal(12, 2)
+  xeroInvoiceId     String?
+  prodaClaimId      String?
+  sentAt            DateTime?
+  paidAt            DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  organisation      Organisation    @relation(fields: [organisationId], references: [id])
+  participant       Participant     @relation(fields: [participantId], references: [id])
+  lineItems         InvoiceLineItem[]
+
+  @@unique([organisationId, invoiceNumber])
+  @@index([organisationId])
+  @@index([participantId])
+  @@index([status])
+  @@map("invoices")
+}
+
+// ============================================================
+// INVOICE LINE ITEM
+// ============================================================
+
+model InvoiceLineItem {
+  id                      String                @id @default(uuid())
+  invoiceId               String
+  shiftId                 String?
+  serviceAgreementItemId  String
+  supportItemNumber       String
+  description             String
+  serviceDate             DateTime              @db.Date
+  quantity                Decimal               @db.Decimal(10, 2)
+  unitPrice               Decimal               @db.Decimal(10, 2)
+  lineTotal               Decimal               @db.Decimal(12, 2)
+  gstApplicable           Boolean               @default(false)
+  claimType               ClaimType?
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+
+  invoice                 Invoice               @relation(fields: [invoiceId], references: [id])
+  shift                   Shift?                @relation(fields: [shiftId], references: [id])
+  serviceAgreementItem    ServiceAgreementItem  @relation(fields: [serviceAgreementItemId], references: [id])
+
+  @@index([invoiceId])
+  @@map("invoice_line_items")
+}
+
+// ============================================================
+// INCIDENT
+// ============================================================
+
+model Incident {
+  id                String            @id @default(uuid())
+  organisationId    String
+  participantId     String?
+  reportedByUserId  String
+  incidentDate      DateTime
+  category          IncidentCategory
+  severity          IncidentSeverity
+  isReportable      Boolean           @default(false)
+  description       String
+  immediateActions  String?
+  status            IncidentStatus    @default(OPEN)
+  outcomeNotes      String?
+  resolvedAt        DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  organisation      Organisation      @relation(fields: [organisationId], references: [id])
+  participant       Participant?      @relation(fields: [participantId], references: [id])
+  reportedBy        User              @relation(fields: [reportedByUserId], references: [id])
+
+  @@index([organisationId])
+  @@index([status])
+  @@map("incidents")
+}
+
+// ============================================================
+// AUDIT LOG
+// ============================================================
+
+model AuditLog {
+  id              String        @id @default(uuid())
+  organisationId  String
+  userId          String
+  entityType      String
+  entityId        String
+  action          AuditAction
+  changes         Json?
+  ipAddress       String?
+  createdAt       DateTime      @default(now())
+
+  organisation    Organisation  @relation(fields: [organisationId], references: [id])
+  user            User          @relation(fields: [userId], references: [id])
+
+  @@index([organisationId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
