@@ -7,6 +7,7 @@ import { OrganisationsModule } from './organisations/organisations.module';
 import { UsersModule } from './users/users.module';
 import { ParticipantsModule } from './participants/participants.module';
 import { NdisPlansModule } from './ndis-plans/ndis-plans.module';
+import { NdisCatalogueModule } from './ndis-catalogue/ndis-catalogue.module';
 import { ServiceAgreementsModule } from './service-agreements/service-agreements.module';
 import { ShiftsModule } from './shifts/shifts.module';
 import { ShiftNotesModule } from './shift-notes/shift-notes.module';
@@ -28,6 +29,7 @@ import { AuditLogModule } from './audit-log/audit-log.module';
     UsersModule,
     ParticipantsModule,
     NdisPlansModule,
+    NdisCatalogueModule,
     ServiceAgreementsModule,
     ShiftsModule,
     ShiftNotesModule,
