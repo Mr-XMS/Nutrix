@@ -6,7 +6,7 @@ import { Toaster } from 'sonner';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'CarePilot',
+  title: 'Nutrix',
   description: 'NDIS provider management built for small operators',
 };
 

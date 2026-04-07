@@ -24,7 +24,7 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('CarePilot API')
+    .setTitle('Nutrix API')
     .setDescription('NDIS Provider Management Platform API')
     .setVersion('0.1.0')
     .addBearerAuth()
@@ -35,6 +35,6 @@ async function bootstrap() {
 
   const port = process.env.PORT || 4000;
   await app.listen(port);
-  console.log(`CarePilot API running on port ${port}`);
+  console.log(`Nutrix API running on port ${port}`);
 }
 bootstrap();

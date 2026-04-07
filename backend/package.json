@@ -1,7 +1,7 @@
 {
-  "name": "carepilot-api",
+  "name": "nutrix-api",
   "version": "0.1.0",
-  "description": "CarePilot NDIS Provider Management Platform - API",
+  "description": "Nutrix NDIS Provider Management Platform - API",
   "private": true,
   "scripts": {
     "build": "nest build",

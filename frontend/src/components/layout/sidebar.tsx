@@ -59,7 +59,7 @@ export function Sidebar() {
     <aside className="w-56 shrink-0 border-r border-ink-100 bg-ink-50/30 flex flex-col">
       <div className="px-5 py-5 border-b border-ink-100">
         <Link href="/dashboard" className="font-mono text-sm tracking-tight text-ink-900">
-          CarePilot
+          Nutrix
         </Link>
         {user && (
           <div className="mt-1 text-xs text-ink-400 truncate" title={user.organisationName}>

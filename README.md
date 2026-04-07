@@ -1,8 +1,8 @@
-# CarePilot
+# Nutrix
 
 **NDIS Provider Management Platform** — Purpose-built SaaS for Australian disability service providers.
 
-> ⚠️ Working title. Name subject to change due to existing US trademark on "CarePilot."
+> ⚠️ Working title. Name subject to change due to existing US trademark on "Nutrix."
 
 ## Stack
 
@@ -45,8 +45,8 @@ backend/
 
 ```bash
 # Clone
-git clone https://github.com/Mr-XMS/Carepilot.git
-cd Carepilot
+git clone https://github.com/Mr-XMS/Nutrix.git
+cd nutrix
 
 # Backend setup
 cd backend

@@ -57,7 +57,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex">
       <div className="hidden lg:flex lg:w-1/2 bg-ink-900 text-white p-12 flex-col justify-between">
-        <div className="font-mono text-sm tracking-tight">CarePilot</div>
+        <div className="font-mono text-sm tracking-tight">Nutrix</div>
         <div>
           <h1 className="text-4xl font-medium leading-tight mb-4">
             Set up your organisation<br />in under two minutes.
@@ -86,7 +86,7 @@ export default function RegisterPage() {
       <div className="flex-1 flex items-center justify-center p-8 bg-white overflow-y-auto">
         <div className="w-full max-w-md py-8">
           <div className="lg:hidden font-mono text-sm tracking-tight text-ink-900 mb-12">
-            CarePilot
+            Nutrix
           </div>
 
           <h2 className="text-2xl font-medium text-ink-900 mb-1">Get started</h2>
