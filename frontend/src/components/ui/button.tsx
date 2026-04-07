@@ -1,5 +1,6 @@
 import { cn } from '@/lib/cn';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { Spinner } from '@/components/ui/spinner';
 
 type ButtonVariant = 'default' | 'outline' | 'ghost' | 'danger' | 'secondary';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -7,14 +8,15 @@ type ButtonSize = 'sm' | 'md' | 'lg';
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  loading?: boolean;
   children: ReactNode;
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  secondary:
-    'border border-ink-200 bg-ink-50 text-ink-700 hover:bg-ink-100 disabled:bg-ink-50 disabled:text-ink-300',
   default:
     'bg-ink-900 text-white hover:bg-ink-800 disabled:bg-ink-300 disabled:text-ink-500',
+  secondary:
+    'border border-ink-200 bg-ink-50 text-ink-700 hover:bg-ink-100 disabled:bg-ink-50 disabled:text-ink-300',
   outline:
     'border border-ink-200 bg-white text-ink-900 hover:border-ink-300 hover:bg-ink-50 disabled:border-ink-100 disabled:text-ink-400',
   ghost:
@@ -32,12 +34,15 @@ const sizeStyles: Record<ButtonSize, string> = {
 export function Button({
   variant = 'default',
   size = 'md',
+  loading = false,
+  disabled,
   className,
   children,
   ...props
 }: ButtonProps) {
   return (
     <button
+      disabled={disabled || loading}
       className={cn(
         'inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed',
         variantStyles[variant],
@@ -46,6 +51,7 @@ export function Button({
       )}
       {...props}
     >
+      {loading && <Spinner size="sm" className="border-current border-t-transparent" />}
       {children}
     </button>
   );
