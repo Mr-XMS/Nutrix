@@ -13,7 +13,6 @@ import { CreateRecurringShiftDto } from './dto/create-recurring-shift.dto';
 import { ClockInDto } from './dto/clock-in.dto';
 import { ClockOutDto } from './dto/clock-out.dto';
 import { QueryShiftsDto } from './dto/query-shifts.dto';
-import { Prisma, ShiftStatus, ShiftType } from '@prisma/client';
 
 @Injectable()
 export class ShiftsService {
