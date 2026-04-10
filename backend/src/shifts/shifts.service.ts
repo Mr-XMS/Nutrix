@@ -13,6 +13,7 @@ import { CreateRecurringShiftDto } from './dto/create-recurring-shift.dto';
 import { ClockInDto } from './dto/clock-in.dto';
 import { ClockOutDto } from './dto/clock-out.dto';
 import { QueryShiftsDto } from './dto/query-shifts.dto';
+import { Prisma, ShiftStatus, ShiftType } from '@prisma/client';
 
 @Injectable()
 export class ShiftsService {
@@ -209,7 +210,7 @@ export class ShiftsService {
     where: {
       organisationId,
       ...(userId && { userId }),
-      status: { notIn: ['CANCELLED', 'NO_SHOW'] },
+      status: { notIn: [ShiftStatus.CANCELLED, ShiftStatus.NO_SHOW] },
       scheduledStart: {
         gte: new Date(startDate),
         lte: new Date(endDate),
