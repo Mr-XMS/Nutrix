@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { User } from '@/types/user';
 import { formatWeekRange } from '@/lib/calendar-utils';
@@ -13,6 +13,7 @@ interface WeekNavProps {
   onNextWeek: () => void;
   onToday: () => void;
   onWorkerChange: (workerId: string | 'ALL') => void;
+  onNewShift: () => void;
 }
 
 export function WeekNav({
@@ -23,6 +24,7 @@ export function WeekNav({
   onNextWeek,
   onToday,
   onWorkerChange,
+  onNewShift,
 }: WeekNavProps) {
   return (
     <div className="flex items-center justify-between gap-3 border-b border-ink-100 px-4 py-3">
@@ -58,6 +60,10 @@ export function WeekNav({
             </option>
           ))}
         </select>
+        <Button size="sm" onClick={onNewShift}>
+          <Plus className="mr-1 h-4 w-4" />
+          New shift
+        </Button>
       </div>
     </div>
   );
