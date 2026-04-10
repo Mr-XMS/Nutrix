@@ -204,16 +204,17 @@ export class ShiftsService {
     startDate: string,
     endDate: string,
     userId?: string,
-  ) {
-    return this.prisma.shift.findMany({
-      where: {
-        organisationId,
-        ...(userId && { userId }),
-        scheduledStart: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
-        },
+) {
+  return this.prisma.shift.findMany({
+    where: {
+      organisationId,
+      ...(userId && { userId }),
+      status: { notIn: ['CANCELLED', 'NO_SHOW'] },
+      scheduledStart: {
+        gte: new Date(startDate),
+        lte: new Date(endDate),
       },
+    },
       include: {
         participant: { select: { id: true, firstName: true, lastName: true } },
         user: { select: { id: true, firstName: true, lastName: true } },
