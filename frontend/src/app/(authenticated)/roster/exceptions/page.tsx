@@ -28,7 +28,7 @@ export default function ExceptionsPage() {
   const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
 
   const { data: workers } = useSupportWorkers();
-  const { data: participantsData } = useParticipants({ limit: 200, status: 'ACTIVE' });
+  const { data: participantsData } = useParticipants({ limit: 100, status: 'ACTIVE' });
   const participants = participantsData?.data;
 
   const queryParams = {

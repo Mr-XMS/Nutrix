@@ -40,7 +40,7 @@ export function ReportIncidentModal({ open, onClose }: ReportIncidentModalProps)
   const [immediateActions, setImmediateActions] = useState('');
 
   const create = useCreateIncident();
-  const { data: participantsData } = useParticipants({ limit: 200, status: 'ACTIVE' });
+  const { data: participantsData } = useParticipants({ limit: 100, status: 'ACTIVE' });
   const participants = participantsData?.data;
 
   const handleClose = () => {

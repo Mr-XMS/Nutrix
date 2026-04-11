@@ -43,7 +43,7 @@ export default function InvoicesPage() {
   const [participantFilter, setParticipantFilter] = useState<string>('');
   const [generateOpen, setGenerateOpen] = useState(false);
 
-  const { data: participantsData } = useParticipants({ limit: 200, status: 'ACTIVE' });
+  const { data: participantsData } = useParticipants({ limit: 100, status: 'ACTIVE' });
   const participants = participantsData?.data;
 
   const params = {
