@@ -58,7 +58,7 @@ export default function DashboardPage() {
         />
         <KpiCard
           label="Open incidents"
-          value={incidentReport ? String(incidentReport.byStatus.OPEN || 0) : '—'}
+          value={incidentReport ? String(incidentReport.byStatus?.OPEN ?? 0) : '—'}
           hint={incidentReport?.overdueCount ? `${incidentReport.overdueCount} overdue` : 'Requires attention'}
           icon={AlertTriangle}
           href="/incidents"
